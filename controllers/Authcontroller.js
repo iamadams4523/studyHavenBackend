@@ -1,5 +1,6 @@
 const User = require('../models/User');
 const bcrypt = require('bcryptjs');
+const sendResetEmail = require('../utilities/sendEmail');
 
 const signup = async (req, res) => {
   try {
@@ -79,4 +80,46 @@ const uploadImage = async (req, res) => {
   }
 };
 
-module.exports = { signin, signup, uploadImage };
+const forgotPassword = async (req, res) => {
+  const { email } = req.body;
+
+  try {
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ msg: 'User not found' });
+    }
+
+    // Send reset email
+    await sendResetEmail(user.email, user.username);
+
+    res.json({ msg: 'Reset email sent successfully' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ msg: 'Server error' });
+  }
+};
+
+const resetPassword = async (req, res) => {
+  const { email, newPassword } = req.body;
+
+  try {
+    const user = await User.findOne({ email });
+    if (!user) return res.status(404).json({ msg: 'Email not registered' });
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    user.password = hashedPassword;
+    await user.save();
+
+    res.json({ msg: 'Password reset successful' });
+  } catch (err) {
+    res.status(500).json({ msg: 'Server error', error: err.message });
+  }
+};
+
+module.exports = {
+  signin,
+  signup,
+  uploadImage,
+  forgotPassword,
+  resetPassword,
+};
