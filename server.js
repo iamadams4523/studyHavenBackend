@@ -4,6 +4,15 @@ const cors = require('cors');
 const morgan = require('morgan');
 const dotenv = require('dotenv');
 const authRoutes = require('./Routes/authRoutes');
+const fs = require('fs');
+const path = require('path');
+
+// Ensure 'uploads' directory exists
+const uploadsDir = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir);
+  console.log('✔ uploads/ folder created');
+}
 
 dotenv.config();
 const app = express();
