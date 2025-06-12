@@ -57,6 +57,9 @@ const signin = async (req, res) => {
 
 const uploadImage = async (req, res) => {
   try {
+    console.log('BODY:', req.body);
+    console.log('FILE:', req.file);
+
     const { userId } = req.body;
 
     if (!req.file) {
@@ -66,12 +69,13 @@ const uploadImage = async (req, res) => {
     const user = await User.findOne({ userId });
     if (!user) return res.status(404).json({ msg: 'User not found' });
 
-    user.image = req.file.path; // or use req.file.filename if you're storing filename only
+    user.image = req.file.path; // or file.filename if you serve by name
     await user.save();
 
     res.json({ msg: 'Image uploaded successfully', imagePath: user.image });
   } catch (err) {
-    res.status(500).json({ msg: 'Server error', err });
+    console.error('UPLOAD ERROR:', err);
+    res.status(500).json({ msg: 'Server error', error: err.message });
   }
 };
 
