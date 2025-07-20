@@ -1,10 +1,15 @@
 const User = require('../models/User');
 const bcrypt = require('bcryptjs');
 const sendResetEmail = require('../utilities/sendEmail');
+const jwt = require('jsonwebtoken');
+
+const generateToken = (id, role) => {
+  return jwt.sign({ id, role }, process.env.JWT_SECRET, { expiresIn: '7d' });
+};
 
 const signup = async (req, res) => {
   try {
-    const { username, email, password } = req.body;
+    const { username, email, password, role } = req.body;
 
     const userExists = await User.findOne({ email });
     if (userExists)
@@ -20,13 +25,24 @@ const signup = async (req, res) => {
       username,
       email,
       password: hashedPassword,
+      role: role || 'user',
     });
 
     await user.save();
 
-    res
-      .status(201)
-      .json({ msg: 'User created successfully', userId: nextUserId });
+    const token = generateToken(user._id, user.role);
+
+    res.status(201).json({
+      msg: 'User created successfully',
+      userId: nextUserId,
+      token,
+      user: {
+        id: user._id,
+        username: user.username,
+        email: user.email,
+        role: user.role,
+      },
+    });
   } catch (err) {
     res.status(500).json({ msg: 'Server error', err });
   }
@@ -42,13 +58,17 @@ const signin = async (req, res) => {
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return res.status(400).json({ msg: 'Invalid credentials' });
 
-    // No token generation
+    const token = generateToken(user._id, user.role);
+
     res.json({
+      msg: 'Signin successful',
+      token,
       user: {
         id: user._id,
         userId: user.userId,
         username: user.username,
         email: user.email,
+        role: user.role,
       },
     });
   } catch (err) {

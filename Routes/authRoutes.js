@@ -16,9 +16,3 @@ router.post('/forgot-password', forgotPassword);
 router.post('/reset-password', resetPassword);
 
 module.exports = router;
-
-// {
-//   "username": "Badmus Okikiolamilekan",
-//   "email": "iamadams4523@gmail.com",
-//   "password": "123456"
-// }
