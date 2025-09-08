@@ -7,11 +7,12 @@ const {
   forgotPassword,
   resetPassword,
 } = require('../controllers/Authcontroller');
+const { protect } = require('../middlewares/authMiddleware');
 const upload = require('../middlewares/upload');
 
 router.post('/signup', signup);
 router.post('/signin', signin);
-router.put('/upload-image', upload.single('image'), uploadImage);
+router.put('/upload-image', protect, upload.single('image'), uploadImage);
 router.post('/forgot-password', forgotPassword);
 router.post('/reset-password', resetPassword);
 

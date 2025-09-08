@@ -78,19 +78,16 @@ const signin = async (req, res) => {
 
 const uploadImage = async (req, res) => {
   try {
-    console.log('BODY:', req.body);
     console.log('FILE:', req.file);
-
-    const { userId } = req.body;
 
     if (!req.file) {
       return res.status(400).json({ msg: 'No file uploaded' });
     }
 
-    const user = await User.findOne({ userId });
+    const user = await User.findById(req.user.id);
     if (!user) return res.status(404).json({ msg: 'User not found' });
 
-    user.image = req.file.path; // or file.filename if you serve by name
+    user.image = req.file.path; // store image path
     await user.save();
 
     res.json({ msg: 'Image uploaded successfully', imagePath: user.image });
